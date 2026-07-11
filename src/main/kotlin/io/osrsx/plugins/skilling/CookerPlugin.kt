@@ -6,7 +6,6 @@ import io.osrsx.api.get
 import io.osrsx.config.PluginConfig
 import io.osrsx.config.isTrue
 import io.osrsx.plugin.HasOverlay
-import io.osrsx.plugin.PluginDescriptor
 import io.osrsx.plugin.ScriptGui
 import io.osrsx.script.ScriptDslPlugin
 import io.osrsx.script.ScriptScope
@@ -30,12 +29,6 @@ import kotlin.time.Duration.Companion.seconds
  * [StopTargets] for XP tracking, the alt-drag [SkillOverlay] and the stop-at-level / stop-after-minutes
  * targets. The [ScriptDslPlugin]'s data box surfaces the live [status] automatically.
  */
-@PluginDescriptor(
-    name = "Cooker",
-    description = "Cooks raw food at a range or fire.",
-    author = "osrsx",
-    tags = ["skilling", "cooking", "processing"],
-)
 class CookerPlugin : ScriptDslPlugin(), HasOverlay {
 
     object Config : PluginConfig("cooker") {
