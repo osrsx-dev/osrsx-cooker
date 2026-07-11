@@ -2,6 +2,7 @@ apply plugin: 'io.osrsx.plugin'
 
 osrsxPlugin {
     id = 'cooker'
+    main = 'io.osrsx.plugins.skilling.CookerPlugin'
     group = 'io.osrsx.plugins'
     version = '1.1.0'
     name = 'Cooker'
