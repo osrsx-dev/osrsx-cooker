@@ -61,14 +61,14 @@ class CookerPlugin : ScriptPlugin() {
 
     override fun script() = script("Cooking") {
         while (!isStopping) {
-            if (!login.isLoggedIn()) { login.login(); sleep(1500L); continue }
+            if (!login.isLoggedIn()) { act("login") { login.login() }; sleep(1500L); continue }
             if (coordination.shouldYield()) { sleep(1200L..2000L); continue } // defer to a higher-priority plugin
             val stopReason = stops.reason()
             if (stopReason != null) { log.i("stopping — $stopReason"); break }
             applyInputLock()
             if (breaks.onBreak()) { sleep(2000L..5000L); continue }  // account-wide break: idle
-            walker.local.manageRun()
-            if (dialogues.inDialogue()) { dialogues.continueAuto(); sleep(600L..1000L); continue }
+            act("manage-run") { walker.local.manageRun() }
+            if (dialogues.inDialogue()) { act("dialogue-continue") { dialogues.continueAuto() }; sleep(600L..1000L); continue }
             val idle = antibanIdle()
             if (idle != null) { sleep(idle); continue }
 
@@ -86,10 +86,13 @@ class CookerPlugin : ScriptPlugin() {
             return
         }
         val raw = inventory.getItem(Config.raw) ?: run { sleep(600L..1000L); return }
-        inventory.useOn(raw, range)
+        act("use-raw-on-range") { inventory.useOn(raw, range) }
         sleep(900L..1500L)
         // "How many would you like to cook?" — pick cook-all, then let the whole batch run.
-        if (waitUntil(5.seconds) { dialogues.makeQuantity() }) sleep(1600L..2600L)
+        if (waitUntil(5.seconds) { dialogues.makeOpen() }) {
+            actUntil(5_000, label = "cook-all", done = { !dialogues.makeOpen() }, action = { dialogues.makeQuantity() })
+            sleep(1600L..2600L)
+        }
         waitWhile(60.seconds, 700.milliseconds) { isAnimating() }
     }
 
@@ -108,7 +111,7 @@ class CookerPlugin : ScriptPlugin() {
         }
         if (Config.raw in inventory) depositAll(Config.raw)
         withdrawItem(Config.raw, 0)                            // a fresh inventory of raw food (0 = All)
-        bank.close()
+        act("close-bank") { bank.close() }
         if (walkHome()) report("walking")                     // head back to the range; next loop resumes cooking
         sleep(600L..1000L)
         return true
@@ -123,10 +126,10 @@ class CookerPlugin : ScriptPlugin() {
     private fun isAnimating(): Boolean = (players.localPlayer()?.animation ?: IDLE) != IDLE
 
     /** Web-walk back toward the configured range tile if set and not yet there; true while still travelling. */
-    private fun walkHome(): Boolean {
+    private suspend fun ScriptScope.walkHome(): Boolean {
         val home = configuredTile(Config.home) ?: return false
         if (walker.global.arrived(home)) return false
-        walker.global.pathTo(home)
+        act("path-home") { walker.global.pathTo(home) }
         return true
     }
 
