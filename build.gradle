@@ -9,5 +9,5 @@ osrsxPlugin {
     description = 'Cooks raw food at a range or fire.'
     authors = ['osrsx']
     tags = ['skilling', 'cooking', 'processing']
-    requires 'skilling-lib:1.0.0'
+    requires 'skilling-lib:1.4.0'
 }
